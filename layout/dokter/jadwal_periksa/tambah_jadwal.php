@@ -77,6 +77,7 @@ require('../../header.php')
                 $hari = '';
                 $jam_mulai = '';
                 $jam_selesai = '';
+                $checked = '';
                 if (isset($_GET['id'])) {
                     $ambil = mysqli_query($con, "SELECT * FROM jadwal_periksa 
                     WHERE id='" . $_GET['id'] . "'");
@@ -84,6 +85,12 @@ require('../../header.php')
                         $hari = $row['hari'];
                         $jam_mulai = $row['jam_mulai'];
                         $jam_selesai = $row['jam_selesai'];
+                        $status = $row['status']; 
+                        if ($row['status'] == 1 ){
+                          $checked = "checked";
+                        } else {
+                          $checked = '';
+                        }
                     }
             ?>
         <input type="hidden" name="id" value="<?php echo $_GET['id'] ?>">
@@ -94,14 +101,32 @@ require('../../header.php')
             
             <div class="form-group">
                 <label for="exampleFormControlSelect1">Hari</label>
-                <select name="hari" id="hari" class="form-control" value="minggu" selected=>
-                    <option value="senin" >Senin</option>
-                    <option value="selasa">Selasa</option>
-                    <option value="rabu">Rabu</option>
-                    <option value="kamis">Kamis</option>
-                    <option value="jumat">Jumat</option>
-                    <option value="sabtu">Sabtu</option>
-                    <option value="minggu">Minggu</option>
+
+                <select name="hari" id="hari" class="form-control" >
+                    <?php
+                      $arr = [];
+
+                      $query = "SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS 
+                                WHERE TABLE_NAME = 'jadwal_periksa' AND COLUMN_NAME = 'hari'";
+                      $dataHari = mysqli_query($con, $query);
+                      
+                      if ($dataHari) {
+                          $row = mysqli_fetch_assoc($dataHari);
+                          $columnType = $row['COLUMN_TYPE'];
+                          $result = str_replace(array("enum('", "')", "''"), array('', '', "'"), $columnType);
+                          $arr = explode("','", $result);
+
+                          for ($i = 0 ; $i < count($arr) ; $i++){
+                            if ($arr[$i] == $hari) {
+                              $selected = 'selected="selected"';
+                            } else {
+                              $selected = '';
+                            }
+                            ?>
+                            <option value="<?php echo $arr[$i] ?>" <?php echo $selected ?>><?php echo $arr[$i] ?></option>
+                      <?php
+                          }}
+                      ?>
                 </select>
             </div>
             <div class="form-group">
@@ -112,26 +137,38 @@ require('../../header.php')
                 <label for="exampleFormControlInput1">Jam Selesai Periksa</label>
                 <input type="time" name="jam_selesai" id="jam_selesai" class="form-control" value="<?php echo $jam_selesai ?>">
             </div>
-            <a type="button" class="btn btn-secondary" href="./jadwal.php">Back</a>
+            <div class="custom-control custom-switch mb-3">
+              <input type="checkbox" class="custom-control-input" id="status" name="status" <?php echo $checked ?> >
+              <label class="custom-control-label" for="status">Status</label>
+            </div>
             <button type="submit" class="btn btn-primary" id="simpan" name="simpan">Simpan</button>
         </form>
     </div>
 <?php
 if (isset($_POST['simpan'])) {
+
+    if(isset($_POST['status'])){
+      $status = '1';
+    } else {
+      $status = '0';
+    }
+
     if (isset($_POST['id'])) {
         $ubah = mysqli_query($con, "UPDATE jadwal_periksa SET 
                                         hari = '" . $_POST['hari'] . "',
                                         jam_mulai = '" . $_POST['jam_mulai'] . "',
-                                        jam_selesai = '" . $_POST['jam_selesai'] . "'
+                                        jam_selesai = '" . $_POST['jam_selesai'] . "',
+                                        status = '" . $status . "'
                                         WHERE
                                         id = '" . $_POST['id'] . "'");
     } else {
-        $tambah = mysqli_query($con, "INSERT INTO jadwal_periksa(id_dokter,hari,jam_mulai,jam_selesai) 
+        $tambah = mysqli_query($con, "INSERT INTO jadwal_periksa(id_dokter,hari,jam_mulai,jam_selesai,status) 
                                         VALUES ( 
                                             '" . $_SESSION['id']. "',
                                             '" . $_POST['hari'] . "',
                                             '" . $_POST['jam_mulai'] . "',
-                                            '" . $_POST['jam_selesai'] . "'
+                                            '" . $_POST['jam_selesai'] . "',
+                                            '" . $status . "'
                                             )");
     }
 

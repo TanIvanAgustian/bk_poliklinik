@@ -86,6 +86,7 @@ require('../../header.php')
                     <th scope="col">Hari</th>
                     <th scope="col">Jam Mulai</th>
                     <th scope="col">Jam Selesai</th>
+                    <th scope="col">Status</th>
                     <th scope="col">Aksi</th>
                 </tr>
             </thead>
@@ -102,9 +103,20 @@ require('../../header.php')
                     <td><?php echo $data['hari'] ?></td>
                     <td><?php echo $data['jam_mulai'] ?></td>
                     <td><?php echo $data['jam_selesai'] ?></td>
+                    <?php
+                      if ($data['status'] == 0){
+                    ?>
+                        <td> Tidak Aktif </td>
+                    <?php
+                      } else {
+                    ?>
+                        <td> Aktif </td>
+                    <?php
+                    }
+                    ?>
+                    
                     <td>
                         <a class="btn btn-primary rounded px-3" href="./tambah_jadwal.php?id=<?php echo $data['id'] ?>" ><i class="fas fa-pen"> Edit</i></a>
-                        <a class="btn btn-danger rounded px-3" href="?id=<?php echo $data['id'] ?>&aksi=hapus"><i class="fas fa-trash"> Hapus</i></a>
                     </td>
                 </tr>
             <?php
@@ -121,17 +133,6 @@ require('../../header.php')
 </div>
 </div>
 
-<?php
-if (isset($_GET['aksi'])) {
-    if ($_GET['aksi'] == 'hapus') {
-        $hapus = mysqli_query($con, "DELETE FROM jadwal_periksa WHERE id = '" . $_GET['id'] . "'");
-    }
-
-    echo "<script> 
-            document.location='index.php';
-            </script>";
-}
-?>
 
 </body>
 </html>
